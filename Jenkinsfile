@@ -13,9 +13,15 @@ pipeline {
             }
         }
 
-        stage('Install Python Deps') {
-            steps {
-                sh 'pip3 install -r requirements.txt'
+       stage('Install Python Deps') {
+    steps {
+        echo "📦 Creating virtual environment"
+        sh '''
+            python3 -m venv venv
+            source venv/bin/activate
+            pip install --upgrade pip
+            pip install -r requirements.txt
+        '''
             }
         }
 
