@@ -1,27 +1,43 @@
 pipeline {
     agent any
 
+    environment {
+        IMAGE_NAME = "notesapp:${BUILD_NUMBER}"
+    }
+
     stages {
-        stage('Clone Code') {
+        stage('Clone Repo') {
             steps {
-                git branch: 'main', url: 'https://github.com/Aarusolanki/django-notes-app.git'
+                checkout scm
+                echo "✅ Code Cloned!"
+            }
+        }
+
+        stage('Install Python Deps') {
+            steps {
+                sh 'pip3 install -r requirements.txt'
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t aartisolanki/django-notes:v1 .'
+                sh 'docker build -t $IMAGE_NAME .'
             }
         }
 
-        stage('Run Docker') {
+        stage('Run Container') {
             steps {
-                sh '''
-                    docker stop django-app || true
-                    docker rm django-app || true
-                    docker run -d -p 8000:8000 --name django-app aartisolanki/django-notes:v1
-                '''
+                sh 'docker run -d -p 5000:5000 $IMAGE_NAME'
             }
+        }
+    }
+
+    post {
+        success {
+            echo "✅ CI/CD Completed Successfully!"
+        }
+        failure {
+            echo "❌ CI/CD Failed. Check logs."
         }
     }
 }
